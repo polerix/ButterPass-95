@@ -658,3 +658,21 @@ input[type=text] {
     font-size: 8px;
     color: green;
 }
+
+.deck-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.deck-timer {
+    background-color: #000;
+    color: #00ff00;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 10px;
+    padding: 1px 4px;
+    border: 1px inset #808080;
+    min-width: 85px;
+    text-align: center;
+    letter-spacing: 1px;
+}

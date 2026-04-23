@@ -179,3 +179,36 @@ document.querySelectorAll('.window, .sticky-note').forEach(win => {
         isDragging = false;
     });
 });
+
+// Timer Polling Logic
+function updateDeckTimers() {
+    updateTimerDisplay('A', playerA);
+    updateTimerDisplay('B', playerB);
+}
+
+function updateTimerDisplay(deck, player) {
+    if (!player || typeof player.getCurrentTime !== 'function' || !player.getDuration) return;
+    
+    try {
+        const current = player.getCurrentTime();
+        const duration = player.getDuration();
+        const remaining = duration - current;
+        
+        const timerEl = document.getElementById(`timer-${deck.toLowerCase()}`);
+        if (timerEl) {
+            timerEl.textContent = `${formatTime(current)} / -${formatTime(remaining)}`;
+        }
+    } catch (e) {
+        // Player might not be fully ready
+    }
+}
+
+function formatTime(seconds) {
+    if (isNaN(seconds) || seconds < 0) return "00:00";
+    const m = Math.floor(seconds / 60);
+    const s = Math.floor(seconds % 60);
+    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+}
+
+// Start Polling
+setInterval(updateDeckTimers, 500);
