@@ -5,7 +5,20 @@
 
 let playerA, playerB;
 const crossfader = document.getElementById('crossfader');
-const queues = { A: [], B: [] };
+let queues = { A: [], B: [] };
+
+// Rehydrate queues from localStorage
+try {
+    const saved = localStorage.getItem('butterpass_queues');
+    if (saved) queues = JSON.parse(saved);
+} catch (e) {
+    console.warn('Could not load saved queues');
+}
+
+// Persist queues to localStorage
+function saveQueues() {
+    localStorage.setItem('butterpass_queues', JSON.stringify(queues));
+}
 
 // Initialize YouTube Players
 function onYouTubeIframeAPIReady() {
@@ -34,6 +47,8 @@ function onYouTubeIframeAPIReady() {
 
 function onPlayerReady(event) {
     updateMixerVolumes();
+    renderQueue('A');
+    renderQueue('B');
 }
 
 // Crossfader Logic
@@ -41,13 +56,16 @@ crossfader.addEventListener('input', updateMixerVolumes);
 
 function updateMixerVolumes() {
     const value = parseInt(crossfader.value);
-    const volA = 100 - value;
-    const volB = value;
+    const x = value / 100; // 0 to 1
+
+    // Equal-power crossfade (Cosine curve)
+    const volA = Math.round(Math.cos(x * 0.5 * Math.PI) * 100);
+    const volB = Math.round(Math.cos((1.0 - x) * 0.5 * Math.PI) * 100);
 
     setPlayerVolume('A', volA);
     setPlayerVolume('B', volB);
 
-    document.querySelector('.status-bar-field:first-child').textContent = `Mix: A ${volA}% / B ${volB}%`;
+    document.querySelector('.status-bar-field:first-child').textContent = `Mix: A ${Math.round(100 - value)}% / B ${value}%`;
 }
 
 function setPlayerVolume(deck, vol) {
@@ -63,6 +81,7 @@ function setPlayerVolume(deck, vol) {
 // Global function to load a video into a deck
 window.loadVideoToDeck = function(deck, source, title, isLocal = false) {
     queues[deck].push({ source, title, isLocal });
+    saveQueues();
     if (queues[deck].length === 1) {
         window.playFromQueue(deck, 0);
     }
@@ -92,12 +111,14 @@ window.playFromQueue = function(deck, index, event) {
     
     // Mark as active in state
     queues[deck].forEach((q, i) => q.active = (i === index));
+    saveQueues();
     renderQueue(deck);
 };
 
 window.removeFromQueue = function(deck, index, event) {
     if (event) event.stopPropagation();
     queues[deck].splice(index, 1);
+    saveQueues();
     renderQueue(deck);
 };
 
@@ -123,11 +144,44 @@ function renderQueue(deck) {
     });
 }
 
-// Timer Polling Logic
 function updateDeckTimers() {
     updateTimerDisplay('A');
     updateTimerDisplay('B');
+    updateEQ();
 }
+
+function updateEQ() {
+    const eqFills = document.querySelectorAll('.eq-fill');
+    if (!eqFills.length) return;
+
+    // Check if any deck is playing
+    let playingVol = 0;
+    const volA = 100 - parseInt(crossfader.value);
+    const volB = parseInt(crossfader.value);
+
+    // YouTube state: 1 = playing. Local state: !paused
+    const ytA = playerA && playerA.getPlayerState && playerA.getPlayerState() === 1;
+    const ytB = playerB && playerB.getPlayerState && playerB.getPlayerState() === 1;
+    const locA = document.getElementById('local-player-a');
+    const locB = document.getElementById('local-player-b');
+    
+    const isPlayingA = ytA || (locA && !locA.paused && locA.currentTime > 0);
+    const isPlayingB = ytB || (locB && !locB.paused && locB.currentTime > 0);
+
+    if (isPlayingA) playingVol = Math.max(playingVol, volA);
+    if (isPlayingB) playingVol = Math.max(playingVol, volB);
+
+    eqFills.forEach(fill => {
+        if (playingVol > 0) {
+            // Random bounce based on volume level
+            const randomH = Math.random() * 0.5 + 0.5; // 50-100% of target
+            fill.style.height = `${playingVol * randomH}%`;
+        } else {
+            fill.style.height = '0%';
+        }
+    });
+}
+
 
 function updateTimerDisplay(deck) {
     const ytPlayer = deck === 'A' ? playerA : playerB;
@@ -149,6 +203,7 @@ function updateTimerDisplay(deck) {
     }
 }
 
+
 function formatTime(seconds) {
     if (isNaN(seconds) || seconds < 0) return "00:00";
     const m = Math.floor(seconds / 60);
@@ -156,7 +211,8 @@ function formatTime(seconds) {
     return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
 }
 
-setInterval(updateDeckTimers, 500);
+setInterval(updateDeckTimers, 200); // Faster polling for EQ
+
 
 // Sync, Reset, and UI Logic
 document.getElementById('sync-btn').addEventListener('click', () => {

@@ -15,14 +15,20 @@ const INSTANCES = [
     'https://invidious.lunar.icu'
 ];
 
-searchBtn.addEventListener('click', performSearch);
+let currentSearchQuery = '';
+let currentPage = 1;
+
+searchBtn.addEventListener('click', () => performSearch(1));
 searchInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') performSearch();
+    if (e.key === 'Enter') performSearch(1);
 });
 
-async function performSearch() {
+async function performSearch(page = 1) {
     const query = searchInput.value.trim();
     if (!query) return;
+
+    currentSearchQuery = query;
+    currentPage = page;
 
     // Check if it's a direct URL or ID
     const directId = extractVideoId(query);
@@ -31,17 +37,22 @@ async function performSearch() {
         return;
     }
 
-    searchResults.innerHTML = '<div class="placeholder-text">Scanning YouTube...</div>';
+    if (page === 1) {
+        searchResults.innerHTML = '<div class="placeholder-text">Scanning YouTube...</div>';
+    } else {
+        const loadBtn = document.getElementById('load-more-btn');
+        if (loadBtn) loadBtn.textContent = 'Loading...';
+    }
 
     let success = false;
     for (const instance of INSTANCES) {
         try {
-            const response = await fetch(`${instance}/api/v1/search?q=${encodeURIComponent(query)}&type=video`);
+            const response = await fetch(`${instance}/api/v1/search?q=${encodeURIComponent(query)}&type=video&page=${page}`);
             if (!response.ok) continue;
             
             const data = await response.json();
             if (data && data.length > 0) {
-                renderResults(data);
+                renderResults(data, page > 1);
                 success = true;
                 break;
             }
@@ -51,12 +62,23 @@ async function performSearch() {
     }
 
     if (!success) {
-        searchResults.innerHTML = '<div class="placeholder-text">All nodes busy. Try again shortly.</div>';
+        if (page === 1) {
+            searchResults.innerHTML = '<div class="placeholder-text">All nodes busy. Try again shortly.</div>';
+        } else {
+            const loadBtn = document.getElementById('load-more-btn');
+            if (loadBtn) loadBtn.textContent = 'Failed. Try again.';
+        }
     }
 }
 
-function renderResults(items) {
-    searchResults.innerHTML = '';
+function renderResults(items, append = false) {
+    if (!append) {
+        searchResults.innerHTML = '';
+    } else {
+        // Remove existing load more button before appending
+        const loadBtn = document.getElementById('load-more-btn');
+        if (loadBtn) loadBtn.remove();
+    }
     
     items.forEach(item => {
         const videoId = item.videoId;
@@ -83,6 +105,16 @@ function renderResults(items) {
         `;
         searchResults.appendChild(div);
     });
+
+    // Add Load More Button
+    const loadMoreBtn = document.createElement('button');
+    loadMoreBtn.id = 'load-more-btn';
+    loadMoreBtn.className = 'btn-retro';
+    loadMoreBtn.style.width = '100%';
+    loadMoreBtn.style.marginTop = '10px';
+    loadMoreBtn.textContent = 'Load More';
+    loadMoreBtn.onclick = () => performSearch(currentPage + 1);
+    searchResults.appendChild(loadMoreBtn);
 }
 
 function formatDuration(seconds) {
