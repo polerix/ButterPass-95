@@ -1,6 +1,6 @@
 /**
  * ButterPass 95 | Mixer Controller
- * Handles YouTube IFrame API, Audio Logic, and Playlist Management
+ * Handles YouTube IFrame API, Local Files, and Audio Logic
  */
 
 let playerA, playerB;
@@ -16,15 +16,9 @@ function onYouTubeIframeAPIReady() {
         width: '100%',
         videoId: 'dQw4w9WgXcQ', // Placeholder
         playerVars: {
-            'autoplay': 0,
-            'controls': 1,
-            'modestbranding': 1,
-            'enablejsapi': 1,
-            'origin': origin
+            'autoplay': 0, 'controls': 1, 'modestbranding': 1, 'enablejsapi': 1, 'origin': origin
         },
-        events: {
-            'onReady': onPlayerReady
-        }
+        events: { 'onReady': onPlayerReady }
     });
 
     playerB = new YT.Player('player-b', {
@@ -32,15 +26,9 @@ function onYouTubeIframeAPIReady() {
         width: '100%',
         videoId: 'y6120QOlsfU', // Placeholder
         playerVars: {
-            'autoplay': 0,
-            'controls': 1,
-            'modestbranding': 1,
-            'enablejsapi': 1,
-            'origin': origin
+            'autoplay': 0, 'controls': 1, 'modestbranding': 1, 'enablejsapi': 1, 'origin': origin
         },
-        events: {
-            'onReady': onPlayerReady
-        }
+        events: { 'onReady': onPlayerReady }
     });
 }
 
@@ -49,38 +37,61 @@ function onPlayerReady(event) {
 }
 
 // Crossfader Logic
-crossfader.addEventListener('input', () => {
-    updateMixerVolumes();
-});
+crossfader.addEventListener('input', updateMixerVolumes);
 
 function updateMixerVolumes() {
-    if (!playerA || !playerB) return;
-
     const value = parseInt(crossfader.value);
-    
-    // Simple Linear Crossfade (can be improved to logarithmic)
     const volA = 100 - value;
     const volB = value;
 
-    if (typeof playerA.setVolume === 'function') playerA.setVolume(volA);
-    if (typeof playerB.setVolume === 'function') playerB.setVolume(volB);
+    setPlayerVolume('A', volA);
+    setPlayerVolume('B', volB);
 
-    // Visual feedback in status bar (optional)
     document.querySelector('.status-bar-field:first-child').textContent = `Mix: A ${volA}% / B ${volB}%`;
 }
 
+function setPlayerVolume(deck, vol) {
+    // YouTube
+    const ytPlayer = deck === 'A' ? playerA : playerB;
+    if (ytPlayer && typeof ytPlayer.setVolume === 'function') ytPlayer.setVolume(vol);
+
+    // Local
+    const localPlayer = document.getElementById(`local-player-${deck.toLowerCase()}`);
+    if (localPlayer) localPlayer.volume = vol / 100;
+}
+
 // Global function to load a video into a deck
-window.loadVideoToDeck = function(deck, videoId, title) {
-    const player = deck === 'A' ? playerA : playerB;
-    
-    // Add to internal state
-    queues[deck].push({ videoId, title });
-    
-    // If it's the first item, load it immediately
+window.loadVideoToDeck = function(deck, source, title, isLocal = false) {
+    queues[deck].push({ source, title, isLocal });
     if (queues[deck].length === 1) {
-        player.loadVideoById(videoId);
+        window.playFromQueue(deck, 0);
+    }
+    renderQueue(deck);
+};
+
+window.playFromQueue = function(deck, index, event) {
+    if (event) event.stopPropagation();
+    const item = queues[deck][index];
+    const ytId = `player-${deck.toLowerCase()}`;
+    const localId = `local-player-${deck.toLowerCase()}`;
+    const ytEl = document.getElementById(ytId);
+    const localEl = document.getElementById(localId);
+
+    if (item.isLocal) {
+        ytEl.style.display = 'none';
+        localEl.style.display = 'block';
+        localEl.src = item.source;
+        localEl.play();
+    } else {
+        localEl.style.display = 'none';
+        localEl.pause();
+        ytEl.style.display = 'block';
+        const player = deck === 'A' ? playerA : playerB;
+        if (player && player.loadVideoById) player.loadVideoById(item.source);
     }
     
+    // Mark as active in state
+    queues[deck].forEach((q, i) => q.active = (i === index));
     renderQueue(deck);
 };
 
@@ -90,28 +101,18 @@ window.removeFromQueue = function(deck, index, event) {
     renderQueue(deck);
 };
 
-window.playFromQueue = function(deck, index) {
-    const player = deck === 'A' ? playerA : playerB;
-    const item = queues[deck][index];
-    player.loadVideoById(item.videoId);
-    renderQueue(deck); // Update active state
-};
-
 function renderQueue(deck) {
     const queueList = document.getElementById(`queue-${deck.toLowerCase()}`);
     queueList.innerHTML = '';
-    
-    const player = deck === 'A' ? playerA : playerB;
-    const currentVideoId = (player && player.getVideoData) ? player.getVideoData().video_id : null;
 
     queues[deck].forEach((item, index) => {
-        const isActive = item.videoId === currentVideoId;
+        const thumb = item.isLocal ? 'https://win98icons.alexmeub.com/icons/png/video_file-0.png' : `https://img.youtube.com/vi/${item.source}/default.jpg`;
         const li = document.createElement('li');
-        li.className = `queue-item ${isActive ? 'active' : ''}`;
+        li.className = `queue-item ${item.active ? 'active' : ''}`;
         li.onclick = () => window.playFromQueue(deck, index);
         
         li.innerHTML = `
-            <img class="queue-thumb" src="https://img.youtube.com/vi/${item.videoId}/default.jpg" alt="thumb">
+            <img class="queue-thumb" src="${thumb}" alt="thumb">
             <span class="queue-title" title="${item.title}">${item.title}</span>
             <div class="queue-actions">
                 <button class="btn-retro queue-play" onclick="window.playFromQueue('${deck}', ${index}, event)">▶</button>
@@ -122,84 +123,29 @@ function renderQueue(deck) {
     });
 }
 
-// Sync and Reset Buttons
-document.getElementById('sync-btn').addEventListener('click', () => {
-    if (playerA && playerB) {
-        const timeA = playerA.getCurrentTime();
-        playerB.seekTo(timeA, true);
-    }
-});
-
-document.getElementById('reset-btn').addEventListener('click', () => {
-    crossfader.value = 50;
-    updateMixerVolumes();
-});
-
-// Start Menu Logic
-const startBtn = document.getElementById('start-btn');
-const startMenu = document.getElementById('start-menu');
-
-startBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    const isVisible = startMenu.style.display === 'flex';
-    startMenu.style.display = isVisible ? 'none' : 'flex';
-    startBtn.classList.toggle('active', !isVisible);
-});
-
-document.addEventListener('click', () => {
-    startMenu.style.display = 'none';
-    startBtn.classList.remove('active');
-});
-
-// Window Dragging Logic
-document.querySelectorAll('.window, .sticky-note').forEach(win => {
-    const titleBar = win.querySelector('.title-bar, .sticky-header');
-    if (!titleBar) return;
-    
-    let isDragging = false;
-    let offset = { x: 0, y: 0 };
-
-    titleBar.addEventListener('mousedown', (e) => {
-        isDragging = true;
-        offset.x = e.clientX - win.offsetLeft;
-        offset.y = e.clientY - win.offsetTop;
-        
-        // Bring to front
-        document.querySelectorAll('.window, .sticky-note').forEach(w => w.style.zIndex = 100);
-        win.style.zIndex = 500;
-    });
-
-    document.addEventListener('mousemove', (e) => {
-        if (!isDragging) return;
-        win.style.left = (e.clientX - offset.x) + 'px';
-        win.style.top = (e.clientY - offset.y) + 'px';
-    });
-
-    document.addEventListener('mouseup', () => {
-        isDragging = false;
-    });
-});
-
 // Timer Polling Logic
 function updateDeckTimers() {
-    updateTimerDisplay('A', playerA);
-    updateTimerDisplay('B', playerB);
+    updateTimerDisplay('A');
+    updateTimerDisplay('B');
 }
 
-function updateTimerDisplay(deck, player) {
-    if (!player || typeof player.getCurrentTime !== 'function' || !player.getDuration) return;
-    
-    try {
-        const current = player.getCurrentTime();
-        const duration = player.getDuration();
-        const remaining = duration - current;
-        
-        const timerEl = document.getElementById(`timer-${deck.toLowerCase()}`);
-        if (timerEl) {
-            timerEl.textContent = `${formatTime(current)} / -${formatTime(remaining)}`;
-        }
-    } catch (e) {
-        // Player might not be fully ready
+function updateTimerDisplay(deck) {
+    const ytPlayer = deck === 'A' ? playerA : playerB;
+    const localPlayer = document.getElementById(`local-player-${deck.toLowerCase()}`);
+    let current = 0, duration = 0;
+
+    if (localPlayer && localPlayer.style.display !== 'none') {
+        current = localPlayer.currentTime;
+        duration = localPlayer.duration || 0;
+    } else if (ytPlayer && typeof ytPlayer.getCurrentTime === 'function') {
+        current = ytPlayer.getCurrentTime();
+        duration = ytPlayer.getDuration() || 0;
+    }
+
+    const remaining = duration - current;
+    const timerEl = document.getElementById(`timer-${deck.toLowerCase()}`);
+    if (timerEl) {
+        timerEl.textContent = `${formatTime(current)} / -${formatTime(remaining)}`;
     }
 }
 
@@ -210,5 +156,47 @@ function formatTime(seconds) {
     return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
 }
 
-// Start Polling
 setInterval(updateDeckTimers, 500);
+
+// Sync, Reset, and UI Logic
+document.getElementById('sync-btn').addEventListener('click', () => {
+    // Complex sync for hybrid is hard, simple implementation:
+    if (playerA && playerB) playerB.seekTo(playerA.getCurrentTime(), true);
+});
+
+document.getElementById('reset-btn').addEventListener('click', () => {
+    crossfader.value = 50;
+    updateMixerVolumes();
+});
+
+const startBtn = document.getElementById('start-btn');
+const startMenu = document.getElementById('start-menu');
+startBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const isVisible = startMenu.style.display === 'flex';
+    startMenu.style.display = isVisible ? 'none' : 'flex';
+    startBtn.classList.toggle('active', !isVisible);
+});
+document.addEventListener('click', () => {
+    startMenu.style.display = 'none';
+    startBtn.classList.remove('active');
+});
+
+document.querySelectorAll('.window, .sticky-note').forEach(win => {
+    const titleBar = win.querySelector('.title-bar, .sticky-header');
+    if (!titleBar) return;
+    let isDragging = false, offset = { x: 0, y: 0 };
+    titleBar.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        offset.x = e.clientX - win.offsetLeft;
+        offset.y = e.clientY - win.offsetTop;
+        document.querySelectorAll('.window, .sticky-note').forEach(w => w.style.zIndex = 100);
+        win.style.zIndex = 500;
+    });
+    document.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        win.style.left = (e.clientX - offset.x) + 'px';
+        win.style.top = (e.clientY - offset.y) + 'px';
+    });
+    document.addEventListener('mouseup', () => isDragging = false);
+});
