@@ -99,6 +99,10 @@
             <div class="title-bar">
                 <div class="title-bar-text">ButterPass 95 - Audio Console</div>
                 <div class="title-bar-controls">
+                    <button class="size-btn" onclick="window.resizeMixer('small')" title="Small">S</button>
+                    <button class="size-btn" onclick="window.resizeMixer('medium')" title="Medium">M</button>
+                    <button class="size-btn" onclick="window.resizeMixer('large')" title="Large">L</button>
+                    <div style="width: 5px;"></div>
                     <button aria-label="Minimize"></button>
                     <button aria-label="Maximize"></button>
                     <button aria-label="Close"></button>
@@ -142,6 +146,12 @@
                         <button class="btn-retro" id="sync-btn">SYNC</button>
                         <button class="btn-retro" id="reset-btn">RESET</button>
                     </div>
+                    <!-- QR Code Area -->
+                    <div class="qr-dock" id="qr-dock" style="margin-top: 15px;">
+                        <div class="qr-header">SCAN TO REQUEST</div>
+                        <div id="qrcode" class="sunken-panel"></div>
+                        <div class="qr-status" id="sync-status">Sync: Local Only</div>
+                    </div>
                 </div>
 
                 <!-- Deck B -->
@@ -173,12 +183,6 @@
             <textarea id="notepad-text" placeholder="Jot down requests here..."></textarea>
         </div>
 
-        <!-- QR Code Area -->
-        <div class="qr-dock" id="qr-dock">
-            <div class="qr-header">SCAN TO REQUEST</div>
-            <div id="qrcode" class="sunken-panel"></div>
-            <div class="qr-status" id="sync-status">Sync: Local Only</div>
-        </div>
     </main>
 
     <!-- Scripts -->

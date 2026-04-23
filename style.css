@@ -283,9 +283,11 @@ body, html {
 
 .mixer-window {
     top: 50px;
-    left: 300px;
-    width: 800px;
+    left: 200px;
+    width: 900px;
     min-height: 500px;
+    resize: both;
+    overflow: hidden;
 }
 
 .mixer-layout {
@@ -315,6 +317,13 @@ body, html {
     display: flex;
     justify-content: center;
     align-items: center;
+    overflow: hidden;
+}
+
+.video-wrapper iframe, .video-wrapper video {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain;
 }
 
 .playlist-manager {
@@ -552,9 +561,6 @@ input[type=text] {
 
 /* --- QR Dock --- */
 .qr-dock {
-    position: absolute;
-    bottom: 50px;
-    right: 20px;
     width: 120px;
     background-color: var(--win-gray);
     border: 2px solid var(--win-white);

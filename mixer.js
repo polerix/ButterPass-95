@@ -256,3 +256,15 @@ document.querySelectorAll('.window, .sticky-note').forEach(win => {
     });
     document.addEventListener('mouseup', () => isDragging = false);
 });
+
+window.resizeMixer = function(size) {
+    const mixer = document.getElementById('mixer-window');
+    if (size === 'small') {
+        mixer.style.width = '700px';
+    } else if (size === 'medium') {
+        mixer.style.width = '900px';
+    } else if (size === 'large') {
+        mixer.style.width = '1200px';
+    }
+};
+
