@@ -89,12 +89,13 @@ window.loadVideoToDeck = function(deck, source, title, isLocal = false) {
     queues[deck].push({ source, title, isLocal });
     saveQueues();
     if (queues[deck].length === 1) {
-        window.playFromQueue(deck, 0);
+        // Cue the video, do not autoplay
+        window.playFromQueue(deck, 0, null, false);
     }
     renderQueue(deck);
 };
 
-window.playFromQueue = function(deck, index, event) {
+window.playFromQueue = function(deck, index, event, autoPlay = true) {
     if (event) event.stopPropagation();
     const item = queues[deck][index];
     const ytId = `player-${deck.toLowerCase()}`;
@@ -106,13 +107,19 @@ window.playFromQueue = function(deck, index, event) {
         ytEl.style.display = 'none';
         localEl.style.display = 'block';
         localEl.src = item.source;
-        localEl.play();
+        if (autoPlay) localEl.play();
     } else {
         localEl.style.display = 'none';
         localEl.pause();
         ytEl.style.display = 'block';
         const player = deck === 'A' ? playerA : playerB;
-        if (player && player.loadVideoById) player.loadVideoById(item.source);
+        if (player) {
+            if (autoPlay) {
+                if (player.loadVideoById) player.loadVideoById(item.source);
+            } else {
+                if (player.cueVideoById) player.cueVideoById(item.source);
+            }
+        }
     }
     
     // Mark as active in state
