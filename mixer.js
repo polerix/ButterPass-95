@@ -71,11 +71,17 @@ function updateMixerVolumes() {
 function setPlayerVolume(deck, vol) {
     // YouTube
     const ytPlayer = deck === 'A' ? playerA : playerB;
-    if (ytPlayer && typeof ytPlayer.setVolume === 'function') ytPlayer.setVolume(vol);
+    if (ytPlayer && typeof ytPlayer.setVolume === 'function') {
+        if (typeof ytPlayer.unMute === 'function') ytPlayer.unMute();
+        ytPlayer.setVolume(vol);
+    }
 
     // Local
     const localPlayer = document.getElementById(`local-player-${deck.toLowerCase()}`);
-    if (localPlayer) localPlayer.volume = vol / 100;
+    if (localPlayer) {
+        localPlayer.muted = false;
+        localPlayer.volume = vol / 100;
+    }
 }
 
 // Global function to load a video into a deck
