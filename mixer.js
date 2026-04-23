@@ -160,7 +160,6 @@ function renderQueue(deck) {
 function updateDeckTimers() {
     updateTimerDisplay('A');
     updateTimerDisplay('B');
-    updateEQ();
 }
 
 function updateEQ() {
@@ -184,16 +183,28 @@ function updateEQ() {
     if (isPlayingA) playingVol = Math.max(playingVol, volA);
     if (isPlayingB) playingVol = Math.max(playingVol, volB);
 
-    eqFills.forEach(fill => {
+    // Pseudo-frequency bands (Bass -> Treble)
+    const bandWeights = [0.95, 0.80, 0.60, 0.70, 0.45, 0.85];
+
+    eqFills.forEach((fill, index) => {
         if (playingVol > 0) {
-            // Random bounce based on volume level
-            const randomH = Math.random() * 0.5 + 0.5; // 50-100% of target
-            fill.style.height = `${playingVol * randomH}%`;
+            // Create a chaotic but weighted bounce
+            const noise = (Math.random() * 0.5) - 0.25; // -25% to +25%
+            let target = (bandWeights[index] + noise) * playingVol;
+            
+            // Randomly drop the beat completely for a frame to simulate dynamics
+            if (Math.random() > 0.85) target = target * 0.3;
+
+            if (target > 100) target = 100;
+            if (target < 5) target = 5 + Math.random() * 5;
+
+            fill.style.height = `${target}%`;
         } else {
             fill.style.height = '0%';
         }
     });
 }
+
 
 
 function updateTimerDisplay(deck) {
@@ -224,7 +235,8 @@ function formatTime(seconds) {
     return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
 }
 
-setInterval(updateDeckTimers, 200); // Faster polling for EQ
+setInterval(updateDeckTimers, 500); // UI polling
+setInterval(updateEQ, 80); // Fast 12fps polling for EQ
 
 
 // Sync, Reset, and UI Logic
