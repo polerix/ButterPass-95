@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ButterPass 95 | YouTube DJ</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="desktop">
+
+    <div class="taskbar">
+        <div class="start-menu-container">
+            <button class="start-button" id="start-btn">
+                <img src="https://win98icons.alexmeub.com/icons/png/windows-0.png" alt="Win logo" width="16">
+                <span>Start</span>
+            </button>
+            <div class="start-menu sunken-panel" id="start-menu" style="display: none;">
+                <div class="start-menu-sidebar">
+                    <div class="sidebar-text">ButterPass<span>95</span></div>
+                </div>
+                <ul class="start-menu-list">
+                    <li class="start-menu-item" onclick="alert('ButterPass 95 v1.0\nBuilt for the Aqua Hub.')">
+                        <img src="https://win98icons.alexmeub.com/icons/png/help_book_big-0.png" width="24"> About...
+                    </li>
+                    <li class="start-menu-item" onclick="location.reload()">
+                        <img src="https://win98icons.alexmeub.com/icons/png/computer_explorer-4.png" width="24"> Restart
+                    </li>
+                    <li class="start-menu-item" onclick="document.getElementById('manual-window').style.display='flex'">
+                        <img src="https://win98icons.alexmeub.com/icons/png/run-0.png" width="24"> Run (Direct URL)...
+                    </li>
+                    <li class="start-menu-item" onclick="document.getElementById('notepad-window').style.display='flex'">
+                        <img src="https://win98icons.alexmeub.com/icons/png/notepad-0.png" width="24"> Notepad (Stickies)...
+                    </li>
+                    <div class="menu-divider"></div>
+                    <li class="start-menu-item" onclick="window.close()">
+                        <img src="https://win98icons.alexmeub.com/icons/png/shut_down_normal-0.png" width="24"> Shut Down...
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="taskbar-divider"></div>
+        <div class="active-tasks">
+            <div class="task-item active">ButterPass 95</div>
+        </div>
+        <div class="tray">
+            <div class="tray-time" id="tray-clock">12:00 PM</div>
+        </div>
+    </div>
+
+    <main class="workspace">
+        <!-- Search Window -->
+        <div class="window search-window" id="search-window">
+            <div class="title-bar">
+                <div class="title-bar-text">YouTube Explorer - Search</div>
+                <div class="title-bar-controls">
+                    <button aria-label="Minimize"></button>
+                    <button aria-label="Maximize"></button>
+                    <button aria-label="Close"></button>
+                </div>
+            </div>
+            <div class="window-body">
+                <div class="search-controls">
+                    <input type="text" id="search-input" placeholder="Search query or paste YouTube URL...">
+                    <button id="search-btn">Find Now</button>
+                </div>
+                <div class="results-container sunken-panel" id="search-results">
+                    <div class="placeholder-text">Enter a query or paste a direct YouTube link.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Manual Load Window (Run Dialog Style) -->
+        <div class="window manual-window" id="manual-window" style="top: 150px; left: 100px; width: 350px; display: none;">
+            <div class="title-bar">
+                <div class="title-bar-text">Direct Video Load</div>
+                <div class="title-bar-controls">
+                    <button aria-label="Close" onclick="document.getElementById('manual-window').style.display='none'"></button>
+                </div>
+            </div>
+            <div class="window-body">
+                <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">
+                    <img src="https://win98icons.alexmeub.com/icons/png/run-1.png" width="32">
+                    <p>Type the URL or Video ID of the track you wish to load into the mixer.</p>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 5px;">
+                    <label for="manual-url">Open:</label>
+                    <input type="text" id="manual-url" style="width: 100%;" placeholder="https://www.youtube.com/watch?v=...">
+                </div>
+                <div class="manual-actions" style="display: flex; justify-content: flex-end; gap: 5px; margin-top: 15px;">
+                    <button class="btn-retro" onclick="handleManualLoad('A')">Load Deck A</button>
+                    <button class="btn-retro" onclick="handleManualLoad('B')">Load Deck B</button>
+                    <button class="btn-retro" onclick="document.getElementById('manual-window').style.display='none'">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mixer Window -->
+        <div class="window mixer-window" id="mixer-window">
+            <div class="title-bar">
+                <div class="title-bar-text">ButterPass 95 - Audio Console</div>
+                <div class="title-bar-controls">
+                    <button aria-label="Minimize"></button>
+                    <button aria-label="Maximize"></button>
+                    <button aria-label="Close"></button>
+                </div>
+            </div>
+            <div class="window-body mixer-layout">
+                <!-- Deck A -->
+                <div class="deck-container" id="deck-a-container">
+                    <div class="deck-header">DECK A</div>
+                    <div class="video-wrapper sunken-panel">
+                        <div id="player-a"></div>
+                    </div>
+                    <div class="playlist-manager sunken-panel" id="playlist-a">
+                        <ul id="queue-a" class="queue-list"></ul>
+                    </div>
+                </div>
+
+                <!-- Center Mixer -->
+                <div class="mixer-center">
+                    <div class="crossfader-container">
+                        <label>CROSSFADE</label>
+                        <input type="range" id="crossfader" min="0" max="100" value="50">
+                        <div class="fader-labels">
+                            <span>A</span>
+                            <span>B</span>
+                        </div>
+                    </div>
+                    <div class="master-controls">
+                        <button class="btn-retro" id="sync-btn">SYNC</button>
+                        <button class="btn-retro" id="reset-btn">RESET</button>
+                    </div>
+                </div>
+
+                <!-- Deck B -->
+                <div class="deck-container" id="deck-b-container">
+                    <div class="deck-header">DECK B</div>
+                    <div class="video-wrapper sunken-panel">
+                        <div id="player-b"></div>
+                    </div>
+                    <div class="playlist-manager sunken-panel" id="playlist-b">
+                        <ul id="queue-b" class="queue-list"></ul>
+                    </div>
+                </div>
+            </div>
+            <div class="status-bar">
+                <p class="status-bar-field">Status: Ready</p>
+                <p class="status-bar-field">Buffer: 100%</p>
+                <p class="status-bar-field">CPU: 2%</p>
+            </div>
+        </div>
+        <!-- Notepad (Stickies) Window -->
+        <div class="sticky-note" id="notepad-window" style="top: 300px; left: 50px;">
+            <div class="sticky-header">
+                <button class="sticky-close" onclick="document.getElementById('notepad-window').style.display='none'">×</button>
+            </div>
+            <textarea id="notepad-text" placeholder="Jot down requests here..."></textarea>
+        </div>
+
+        <!-- QR Code Area -->
+        <div class="qr-dock" id="qr-dock">
+            <div class="qr-header">SCAN TO REQUEST</div>
+            <div id="qrcode" class="sunken-panel"></div>
+            <div class="qr-status" id="sync-status">Sync: Local Only</div>
+        </div>
+    </main>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://www.youtube.com/iframe_api"></script>
+    <script src="mixer.js"></script>
+    <script src="search.js"></script>
+    <script src="sync.js"></script>
+    <script>
+        // Simple clock for taskbar
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('tray-clock').textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+    </script>
+</body>
+</html>

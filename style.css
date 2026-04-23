@@ -1,0 +1,660 @@
+/* ButterPass 95 | Windows 95 Skeuomorphic Design System */
+
+:root {
+    --win-gray: #c0c0c0;
+    --win-white: #ffffff;
+    --win-dark-gray: #808080;
+    --win-black: #000000;
+    --win-blue: #000080;
+    --win-light-gray: #dfdfdf;
+    --win-shadow: #404040;
+    --desktop-teal: #008080;
+}
+
+@font-face {
+    font-family: 'MS Sans Serif';
+    src: local('MS Sans Serif'), local('Tahoma'), sans-serif;
+}
+
+* {
+    box-sizing: border-box;
+    font-family: 'MS Sans Serif', 'Tahoma', sans-serif;
+    font-size: 11px;
+}
+
+body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow: hidden;
+}
+
+.desktop {
+    background-color: var(--desktop-teal);
+    height: 100vh;
+    width: 100vw;
+    display: flex;
+    flex-direction: column;
+}
+
+/* --- Window Styles --- */
+
+.window {
+    background-color: var(--win-gray);
+    border-top: 2px solid var(--win-white);
+    border-left: 2px solid var(--win-white);
+    border-right: 2px solid var(--win-shadow);
+    border-bottom: 2px solid var(--win-shadow);
+    box-shadow: 1px 1px 0px var(--win-black);
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+}
+
+.title-bar {
+    background: linear-gradient(90deg, var(--win-blue), #1084d0);
+    padding: 3px 5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: white;
+    font-weight: bold;
+    cursor: grab;
+}
+
+.title-bar:active {
+    cursor: grabbing;
+}
+
+.title-bar-text {
+    font-size: 12px;
+    letter-spacing: 0.5px;
+}
+
+.title-bar-controls {
+    display: flex;
+    gap: 2px;
+}
+
+.title-bar-controls button {
+    width: 16px;
+    height: 14px;
+    background-color: var(--win-gray);
+    border-top: 1px solid var(--win-white);
+    border-left: 1px solid var(--win-white);
+    border-right: 1px solid var(--win-shadow);
+    border-bottom: 1px solid var(--win-shadow);
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+}
+
+.title-bar-controls button:active {
+    border-top: 1px solid var(--win-shadow);
+    border-left: 1px solid var(--win-shadow);
+    border-right: 1px solid var(--win-white);
+    border-bottom: 1px solid var(--win-white);
+}
+
+.window-body {
+    padding: 8px;
+    flex-grow: 1;
+}
+
+/* --- Panels & Bevels --- */
+
+.sunken-panel {
+    background-color: var(--win-white);
+    border-top: 2px solid var(--win-shadow);
+    border-left: 2px solid var(--win-shadow);
+    border-right: 2px solid var(--win-white);
+    border-bottom: 2px solid var(--win-white);
+    overflow: auto;
+}
+
+.status-bar {
+    display: flex;
+    background-color: var(--win-gray);
+    padding: 2px;
+    border-top: 1px solid var(--win-dark-gray);
+}
+
+.status-bar-field {
+    border: 1px inset var(--win-white);
+    padding: 2px 5px;
+    margin: 0;
+    margin-right: 2px;
+    flex-grow: 1;
+}
+
+/* --- Taskbar --- */
+
+.taskbar {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    height: 28px;
+    background-color: var(--win-gray);
+    border-top: 2px solid var(--win-white);
+    display: flex;
+    align-items: center;
+    padding: 2px;
+    z-index: 1000;
+}
+
+.start-button {
+    height: 22px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-weight: bold;
+    background-color: var(--win-gray);
+    border-top: 2px solid var(--win-white);
+    border-left: 2px solid var(--win-white);
+    border-right: 2px solid var(--win-shadow);
+    border-bottom: 2px solid var(--win-shadow);
+    padding: 0 5px;
+}
+
+.start-button:active, .start-button.active {
+    border-top: 2px solid var(--win-shadow);
+    border-left: 2px solid var(--win-shadow);
+    border-right: 2px solid var(--win-white);
+    border-bottom: 2px solid var(--win-white);
+    padding: 1px 4px 0px 6px;
+}
+
+/* --- Start Menu --- */
+.start-menu-container {
+    position: relative;
+}
+
+.start-menu {
+    position: absolute;
+    bottom: 26px;
+    left: 0;
+    width: 180px;
+    display: flex;
+    z-index: 2000;
+}
+
+.start-menu-sidebar {
+    width: 25px;
+    background: linear-gradient(0deg, var(--win-dark-gray), var(--win-black));
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding-bottom: 10px;
+}
+
+.sidebar-text {
+    transform: rotate(-90deg);
+    color: var(--win-gray);
+    font-weight: bold;
+    font-size: 14px;
+    white-space: nowrap;
+    letter-spacing: 1px;
+}
+
+.sidebar-text span {
+    color: white;
+}
+
+.start-menu-list {
+    list-style: none;
+    margin: 0;
+    padding: 2px;
+    flex-grow: 1;
+    background-color: var(--win-gray);
+}
+
+.start-menu-item {
+    padding: 5px 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+}
+
+.start-menu-item:hover {
+    background-color: var(--win-blue);
+    color: white;
+}
+
+.menu-divider {
+    height: 1px;
+    background-color: var(--win-dark-gray);
+    border-bottom: 1px solid var(--win-white);
+    margin: 2px 0;
+}
+
+.taskbar-divider {
+    width: 2px;
+    height: 20px;
+    background-color: var(--win-shadow);
+    border-right: 1px solid var(--win-white);
+    margin: 0 5px;
+}
+
+.active-tasks {
+    flex-grow: 1;
+    display: flex;
+    gap: 5px;
+}
+
+.task-item {
+    height: 22px;
+    background-color: var(--win-gray);
+    border-top: 2px solid var(--win-white);
+    border-left: 2px solid var(--win-white);
+    border-right: 2px solid var(--win-shadow);
+    border-bottom: 2px solid var(--win-shadow);
+    padding: 0 10px;
+    display: flex;
+    align-items: center;
+    max-width: 150px;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.task-item.active {
+    background-color: var(--win-light-gray);
+    border-top: 2px solid var(--win-shadow);
+    border-left: 2px solid var(--win-shadow);
+    border-right: 2px solid var(--win-white);
+    border-bottom: 2px solid var(--win-white);
+    font-weight: bold;
+}
+
+.tray {
+    border-left: 2px solid var(--win-shadow);
+    border-top: 2px solid var(--win-shadow);
+    border-right: 1px solid var(--win-white);
+    border-bottom: 1px solid var(--win-white);
+    padding: 0 5px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+}
+
+/* --- Mixer Specific Layout --- */
+
+.mixer-window {
+    top: 50px;
+    left: 300px;
+    width: 800px;
+    min-height: 500px;
+}
+
+.mixer-layout {
+    display: grid;
+    grid-template-columns: 1fr 150px 1fr;
+    gap: 15px;
+    height: 100%;
+}
+
+.deck-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.deck-header {
+    background-color: var(--win-blue);
+    color: white;
+    padding: 2px 5px;
+    font-weight: bold;
+    text-align: center;
+}
+
+.video-wrapper {
+    aspect-ratio: 16/9;
+    background: black;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.playlist-manager {
+    flex-grow: 1;
+    height: 200px;
+}
+
+.queue-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.queue-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px;
+    border-bottom: 1px solid var(--win-light-gray);
+    cursor: pointer;
+    position: relative;
+}
+
+.queue-item:hover {
+    background-color: var(--win-light-gray);
+}
+
+.queue-item.active {
+    background-color: var(--win-blue);
+    color: white;
+}
+
+.queue-thumb {
+    width: 40px;
+    height: 22px;
+    border: 1px solid var(--win-shadow);
+    object-fit: cover;
+}
+
+.queue-title {
+    flex-grow: 1;
+    font-size: 9px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.queue-remove {
+    width: 16px;
+    height: 16px;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    color: var(--win-black);
+}
+
+.queue-remove:hover {
+    background-color: #ff0000;
+    color: white;
+}
+
+/* --- Controls --- */
+
+.mixer-center {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 30px;
+}
+
+.crossfader-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
+input[type=range] {
+    -webkit-appearance: none;
+    width: 100%;
+    background: transparent;
+}
+
+input[type=range]::-webkit-slider-runnable-track {
+    width: 100%;
+    height: 4px;
+    background: var(--win-shadow);
+    border-bottom: 1px solid var(--win-white);
+    border-right: 1px solid var(--win-white);
+}
+
+input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    height: 30px;
+    width: 15px;
+    background: var(--win-gray);
+    border-top: 2px solid var(--win-white);
+    border-left: 2px solid var(--win-white);
+    border-right: 2px solid var(--win-shadow);
+    border-bottom: 2px solid var(--win-shadow);
+    cursor: pointer;
+    margin-top: -13px;
+}
+
+.fader-labels {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    margin-top: 5px;
+    font-weight: bold;
+}
+
+.btn-retro {
+    background-color: var(--win-gray);
+    border-top: 2px solid var(--win-white);
+    border-left: 2px solid var(--win-white);
+    border-right: 2px solid var(--win-shadow);
+    border-bottom: 2px solid var(--win-shadow);
+    padding: 5px 15px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.btn-retro:active {
+    border-top: 2px solid var(--win-shadow);
+    border-left: 2px solid var(--win-shadow);
+    border-right: 2px solid var(--win-white);
+    border-bottom: 2px solid var(--win-white);
+}
+
+/* --- Search Window --- */
+
+.search-window {
+    top: 50px;
+    left: 20px;
+    width: 260px;
+    height: 500px;
+}
+
+.search-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    margin-bottom: 10px;
+}
+
+input[type=text] {
+    padding: 3px;
+    border-top: 1px solid var(--win-shadow);
+    border-left: 1px solid var(--win-shadow);
+    border-right: 1px solid var(--win-white);
+    border-bottom: 1px solid var(--win-white);
+}
+
+.results-container {
+    height: 380px;
+    padding: 5px;
+}
+
+.search-result-item {
+    display: grid;
+    grid-template-columns: 80px 1fr;
+    gap: 8px;
+    padding: 8px;
+    border-bottom: 1px solid var(--win-light-gray);
+    background-color: var(--win-gray);
+}
+
+.search-result-item:hover {
+    background-color: var(--win-light-gray);
+}
+
+.result-thumb-container {
+    position: relative;
+    width: 80px;
+    height: 45px;
+    border: 1px solid var(--win-shadow);
+}
+
+.result-thumb {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.result-duration {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    background: rgba(0,0,0,0.8);
+    color: white;
+    font-size: 8px;
+    padding: 1px 2px;
+}
+
+.result-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.search-result-title {
+    font-weight: bold;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 10px;
+}
+
+.result-channel {
+    font-size: 9px;
+    color: var(--win-dark-gray);
+}
+
+.search-result-actions {
+    display: flex;
+    gap: 4px;
+    margin-top: 4px;
+}
+
+.search-result-actions button {
+    font-size: 9px;
+    padding: 2px 4px;
+    flex: 1;
+}
+
+/* --- Notepad (Stickies) --- */
+.notepad-window textarea:focus {
+    outline: none;
+}
+
+/* --- QR Dock --- */
+.qr-dock {
+    position: absolute;
+    bottom: 50px;
+    right: 20px;
+    width: 120px;
+    background-color: var(--win-gray);
+    border: 2px solid var(--win-white);
+    border-right: 2px solid var(--win-shadow);
+    border-bottom: 2px solid var(--win-shadow);
+    display: flex;
+    flex-direction: column;
+    padding: 2px;
+    gap: 2px;
+}
+
+.qr-header {
+    background-color: var(--win-blue);
+    color: white;
+    font-size: 9px;
+    text-align: center;
+    font-weight: bold;
+    padding: 2px;
+}
+
+#qrcode {
+    padding: 5px;
+    background: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#qrcode img {
+    width: 100%;
+    height: auto;
+}
+
+.qr-status {
+    font-size: 8px;
+    text-align: center;
+    padding: 2px;
+    border-top: 1px solid var(--win-dark-gray);
+}
+
+/* --- Sticky Note (Square & Yellow) --- */
+.sticky-note {
+    position: absolute;
+    width: 250px;
+    height: 250px;
+    background-color: #ffff88;
+    box-shadow: 5px 5px 15px rgba(0,0,0,0.2);
+    display: flex;
+    flex-direction: column;
+    padding: 5px;
+    transform: rotate(-1deg);
+    border: 1px solid rgba(0,0,0,0.1);
+}
+
+.sticky-header {
+    height: 20px;
+    display: flex;
+    justify-content: flex-end;
+    cursor: grab;
+}
+
+.sticky-header:active {
+    cursor: grabbing;
+}
+
+.sticky-close {
+    background: transparent;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+    color: rgba(0,0,0,0.3);
+}
+
+.sticky-close:hover {
+    color: #000;
+}
+
+#notepad-text {
+    flex-grow: 1;
+    background: transparent;
+    border: none;
+    font-family: 'Comic Sans MS', 'Tahoma', cursive;
+    font-size: 13px;
+    color: #444;
+    resize: none;
+    padding: 10px;
+}
+
+.queue-actions {
+    display: flex;
+    gap: 2px;
+}
+
+.queue-play {
+    width: 16px;
+    height: 16px;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 8px;
+    color: green;
+}
