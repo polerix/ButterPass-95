@@ -676,3 +676,19 @@ input[type=text] {
     text-align: center;
     letter-spacing: 1px;
 }
+
+.results-container.drag-active {
+    background-color: #e1e1e1;
+    border: 2px dashed var(--win-blue);
+}
+
+.results-container.drag-active::after {
+    content: "DROP TO LOAD";
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    font-weight: bold;
+    color: var(--win-blue);
+    pointer-events: none;
+}

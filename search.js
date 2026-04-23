@@ -136,3 +136,26 @@ window.handleManualLoad = function(deck) {
         alert('Invalid YouTube URL or Video ID');
     }
 };
+
+// Drag and Drop Logic
+searchResults.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    searchResults.classList.add('drag-active');
+});
+
+searchResults.addEventListener('dragleave', () => {
+    searchResults.classList.remove('drag-active');
+});
+
+searchResults.addEventListener('drop', (e) => {
+    e.preventDefault();
+    searchResults.classList.remove('drag-active');
+    
+    const data = e.dataTransfer.getData('text/plain') || e.dataTransfer.getData('text/uri-list');
+    if (data) {
+        const videoId = extractVideoId(data);
+        if (videoId) {
+            renderDirectResult(videoId, data);
+        }
+    }
+});
