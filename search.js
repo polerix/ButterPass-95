@@ -89,7 +89,41 @@ function performSearch() {
 function renderCrate(filterQuery = '') {
     searchResults.innerHTML = '';
     
-    if (crateHistory.length === 0) {
+    
+    // Rehydration Button
+    if (savedWarehouseHandle) {
+        const hasLocalFiles = crateHistory.some(item => item.isLocal);
+        if (!hasLocalFiles && document.getElementById('rehydrate-btn') === null) {
+            const btn = document.createElement('button');
+            btn.id = 'rehydrate-btn';
+            btn.className = 'btn-retro';
+            btn.style.width = '100%';
+            btn.style.marginBottom = '10px';
+            btn.style.backgroundColor = '#ffffaa';
+            btn.style.color = 'black';
+            btn.style.fontWeight = 'bold';
+            btn.textContent = '⚠️ Click to Re-Open Local WAREHOUSE';
+            btn.onclick = async () => {
+                btn.textContent = 'Requesting access...';
+                try {
+                    const permission = await savedWarehouseHandle.requestPermission({ mode: 'read' });
+                    if (permission === 'granted') {
+                        btn.textContent = 'Scanning...';
+                        await runDirectoryScan(savedWarehouseHandle, null);
+                    } else {
+                        btn.textContent = 'Access Denied - Scan Manually via Settings';
+                        btn.style.backgroundColor = '#ffaaaa';
+                    }
+                } catch (e) {
+                    console.error('Failed to rehydrate:', e);
+                    btn.textContent = 'Error - Scan Manually via Settings';
+                }
+            };
+            searchResults.appendChild(btn);
+        }
+    }
+
+    if (crateHistory.length === 0)
         searchResults.innerHTML = '<div class="placeholder-text">Your WAREHOUSE is empty. Scan a local folder, or drag and drop files/URLs here!</div>';
         return;
     }
@@ -211,6 +245,101 @@ searchResults.addEventListener('drop', (e) => {
 // Render initial crate
 renderCrate();
 
+
+// IndexedDB for storing Directory Handles
+const DB_NAME = 'ButterPassWarehouse';
+const STORE_NAME = 'handles';
+
+function initDB() {
+    return new Promise((resolve, reject) => {
+        const request = indexedDB.open(DB_NAME, 1);
+        request.onupgradeneeded = (e) => {
+            e.target.result.createObjectStore(STORE_NAME);
+        };
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+    });
+}
+
+async function saveDirHandle(handle) {
+    try {
+        const db = await initDB();
+        const tx = db.transaction(STORE_NAME, 'readwrite');
+        tx.objectStore(STORE_NAME).put(handle, 'warehouse_root');
+    } catch (e) {
+        console.warn('Could not save handle to IndexedDB');
+    }
+}
+
+async function getDirHandle() {
+    try {
+        const db = await initDB();
+        return new Promise((resolve, reject) => {
+            const tx = db.transaction(STORE_NAME, 'readonly');
+            const req = tx.objectStore(STORE_NAME).get('warehouse_root');
+            req.onsuccess = () => resolve(req.result);
+            req.onerror = () => reject(req.error);
+        });
+    } catch (e) {
+        return null;
+    }
+}
+
+let savedWarehouseHandle = null;
+getDirHandle().then(handle => {
+    if (handle) {
+        savedWarehouseHandle = handle;
+        renderCrate();
+    }
+});
+
+// Extracted scan logic
+async function runDirectoryScan(dirHandle, statusEl) {
+    if (statusEl) statusEl.textContent = 'Scanning directory...';
+    let foundCount = 0;
+    
+    async function scanDirectory(handle, currentPath) {
+        for await (const entry of handle.values()) {
+            if (entry.kind === 'file') {
+                const name = entry.name.toLowerCase();
+                if (name.endsWith('.mp3') || name.endsWith('.wav') || name.endsWith('.mp4') || name.endsWith('.webm') || name.endsWith('.ogg')) {
+                    const file = await entry.getFile();
+                    const url = URL.createObjectURL(file);
+                    
+                    let title = file.name;
+                    if (currentPath && currentPath !== dirHandle.name) {
+                        title = `[${currentPath}] ${title}`;
+                    }
+                    
+                    const isVideo = name.endsWith('.mp4') || name.endsWith('.webm');
+                    window.addToCrate('local', title, true, url);
+                    
+                    if (isVideo) {
+                        generateVideoThumbnail(url).then(thumbData => {
+                            if (thumbData) {
+                                const item = crateHistory.find(i => i.url === url);
+                                if (item) {
+                                    item.thumb = thumbData;
+                                    performSearch();
+                                }
+                            }
+                        });
+                    }
+                    foundCount++;
+                }
+            } else if (entry.kind === 'directory') {
+                await scanDirectory(entry, entry.name);
+            }
+        }
+    }
+    
+    await scanDirectory(dirHandle, dirHandle.name);
+    
+    if (statusEl) statusEl.textContent = `Scan complete! Added ${foundCount} playable files to WAREHOUSE.`;
+    document.getElementById('search-input').value = '';
+    renderCrate();
+}
+
 // WAREHOUSE Local Scanning
 window.scanLocalWarehouse = async function() {
     const statusEl = document.getElementById('settings-status');
@@ -225,56 +354,9 @@ window.scanLocalWarehouse = async function() {
             mode: 'read'
         });
         
-        statusEl.textContent = 'Scanning directory...';
-        let foundCount = 0;
-        
-        // Recursive search for media files
-        async function scanDirectory(handle, currentPath) {
-            for await (const entry of handle.values()) {
-                if (entry.kind === 'file') {
-                    const name = entry.name.toLowerCase();
-                    if (name.endsWith('.mp3') || name.endsWith('.wav') || name.endsWith('.mp4') || name.endsWith('.webm') || name.endsWith('.ogg')) {
-                        const file = await entry.getFile();
-                        const url = URL.createObjectURL(file);
-                        
-                        // Tag title with the parent folder name (Crates inside Crates)
-                        let title = file.name;
-                        if (currentPath) {
-                            title = `[${currentPath}] ${title}`;
-                        }
-                        
-                        // We use file.name as videoId for local files
-                        const isVideo = name.endsWith('.mp4') || name.endsWith('.webm');
-                        window.addToCrate('local', title, true, url);
-                        
-                        if (isVideo) {
-                            // Generate thumb asynchronously
-                            generateVideoThumbnail(url).then(thumbData => {
-                                if (thumbData) {
-                                    const item = crateHistory.find(i => i.url === url);
-                                    if (item) {
-                                        item.thumb = thumbData;
-                                        // Quick DOM update if visible
-                                        performSearch();
-                                    }
-                                }
-                            });
-                        }
-                        
-                        foundCount++;
-                    }
-                } else if (entry.kind === 'directory') {
-                    // Recursive call
-                    await scanDirectory(entry, entry.name);
-                }
-            }
-        }
-        
-        await scanDirectory(dirHandle, dirHandle.name);
-        
-        statusEl.textContent = `Scan complete! Added ${foundCount} playable files to WAREHOUSE.`;
-        document.getElementById('search-input').value = '';
-        renderCrate();
+        await saveDirHandle(dirHandle);
+        savedWarehouseHandle = dirHandle;
+        await runDirectoryScan(dirHandle, statusEl);
         
     } catch (err) {
         console.error(err);
