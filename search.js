@@ -23,7 +23,7 @@ function saveCrate() {
     localStorage.setItem('butterpass_crate', JSON.stringify(crateHistory.filter(item => !item.isLocal)));
 }
 
-window.addToCrate = function(videoId, title, isLocal, url = null) {
+window.addToCrate = function(videoId, title, isLocal, url = null, thumbData = null) {
     const existingIndex = crateHistory.findIndex(item => 
         (isLocal && item.url === url) || (!isLocal && item.videoId === videoId)
     );
@@ -32,6 +32,7 @@ window.addToCrate = function(videoId, title, isLocal, url = null) {
         const item = crateHistory.splice(existingIndex, 1)[0];
         // Update title if needed
         item.title = title;
+        if (thumbData) item.thumb = thumbData;
         crateHistory.unshift(item);
     } else {
         crateHistory.unshift({
@@ -39,12 +40,35 @@ window.addToCrate = function(videoId, title, isLocal, url = null) {
             title,
             isLocal,
             url,
+            thumb: thumbData,
             addedAt: Date.now()
         });
     }
     saveCrate();
     renderCrate();
 };
+
+async function generateVideoThumbnail(url) {
+    return new Promise((resolve) => {
+        const video = document.createElement('video');
+        video.src = url;
+        video.muted = true;
+        video.crossOrigin = 'anonymous';
+        video.onloadeddata = () => {
+            video.currentTime = 2; // Seek to 2 seconds
+        };
+        video.onseeked = () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = 160;
+            canvas.height = 90;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            resolve(canvas.toDataURL('image/jpeg', 0.6));
+        };
+        video.onerror = () => resolve(null);
+        setTimeout(() => resolve(null), 3000); // 3 second timeout
+    });
+}
 
 searchBtn.addEventListener('click', performSearch);
 searchInput.addEventListener('input', performSearch); // Instant offline search
@@ -82,7 +106,12 @@ function renderCrate(filterQuery = '') {
     }
 
     filtered.forEach(item => {
-        const thumb = item.isLocal ? 'https://win98icons.alexmeub.com/icons/png/video_file-0.png' : `https://img.youtube.com/vi/${item.videoId}/mqdefault.jpg`;
+        let thumb = `https://img.youtube.com/vi/${item.videoId}/mqdefault.jpg`;
+        if (item.isLocal) {
+            thumb = item.thumb || (item.title.toLowerCase().endsWith('.mp3') || item.title.toLowerCase().endsWith('.wav') || item.title.toLowerCase().endsWith('.ogg') 
+                ? 'https://win98icons.alexmeub.com/icons/png/cd_audio_cd_a-0.png' 
+                : 'https://win98icons.alexmeub.com/icons/png/movie_maker-0.png');
+        }
         const sourceParam = item.isLocal ? item.url : item.videoId;
         
         const div = document.createElement('div');
@@ -150,9 +179,22 @@ searchResults.addEventListener('drop', (e) => {
     
     if (e.dataTransfer.files.length > 0) {
         const file = e.dataTransfer.files[0];
-        if (file.type.startsWith('video/') || file.type.startsWith('audio/')) {
+        const isVideo = file.type.startsWith('video/');
+        if (isVideo || file.type.startsWith('audio/')) {
             const fileUrl = URL.createObjectURL(file);
             window.addToCrate('local', file.name, true, fileUrl);
+            
+            if (isVideo) {
+                generateVideoThumbnail(fileUrl).then(thumbData => {
+                    if (thumbData) {
+                        const item = crateHistory.find(i => i.url === fileUrl);
+                        if (item) {
+                            item.thumb = thumbData;
+                            performSearch();
+                        }
+                    }
+                });
+            }
         }
         return;
     }
@@ -202,7 +244,23 @@ window.scanLocalWarehouse = async function() {
                         }
                         
                         // We use file.name as videoId for local files
+                        const isVideo = name.endsWith('.mp4') || name.endsWith('.webm');
                         window.addToCrate('local', title, true, url);
+                        
+                        if (isVideo) {
+                            // Generate thumb asynchronously
+                            generateVideoThumbnail(url).then(thumbData => {
+                                if (thumbData) {
+                                    const item = crateHistory.find(i => i.url === url);
+                                    if (item) {
+                                        item.thumb = thumbData;
+                                        // Quick DOM update if visible
+                                        performSearch();
+                                    }
+                                }
+                            });
+                        }
+                        
                         foundCount++;
                     }
                 } else if (entry.kind === 'directory') {
