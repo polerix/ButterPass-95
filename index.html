@@ -54,10 +54,10 @@
     </div>
 
     <main class="workspace">
-        <!-- Search / Crate Window -->
+        <!-- Search / WAREHOUSE Window -->
         <div class="window search-window" id="search-window">
             <div class="title-bar">
-                <div class="title-bar-text">Crate / History</div>
+                <div class="title-bar-text">WAREHOUSE</div>
                 <div class="title-bar-controls">
                     <button aria-label="Minimize"></button>
                     <button aria-label="Maximize"></button>
@@ -66,7 +66,7 @@
             </div>
             <div class="window-body">
                 <div class="search-controls">
-                    <input type="text" id="search-input" placeholder="Search crate or paste YouTube URL...">
+                    <input type="text" id="search-input" placeholder="Search WAREHOUSE or paste YouTube URL...">
                     <button id="search-btn">Find Now</button>
                 </div>
                 <div class="results-container sunken-panel" id="search-results">
@@ -110,9 +110,11 @@
             </div>
             <div class="window-body">
                 <fieldset style="border: 2px groove var(--win-white); padding: 10px; margin-bottom: 10px;">
-                    <legend>Local Drive Save</legend>
-                    <p style="margin-top: 0;">Backup your Crate History to a local folder.</p>
-                    <button class="btn-retro" onclick="exportCrateToLocalDrive()">Browse and Save...</button>
+                    <legend>WAREHOUSE Backup & Ingestion</legend>
+                    <p style="margin-top: 0;">Backup your WAREHOUSE history to a local folder.</p>
+                    <button class="btn-retro" style="margin-bottom: 5px;" onclick="exportCrateToLocalDrive()">Backup History (.json)...</button>
+                    <p style="margin-top: 5px; margin-bottom: 5px;">Scan a local folder to add playable media to your session.</p>
+                    <button class="btn-retro" onclick="scanLocalWarehouse()">Quick Scan Local Folder...</button>
                     <div id="settings-status" style="margin-top: 10px; font-size: 10px; color: green;"></div>
                 </fieldset>
                 <div class="manual-actions" style="display: flex; justify-content: flex-end;">

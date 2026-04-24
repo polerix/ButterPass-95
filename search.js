@@ -66,7 +66,7 @@ function renderCrate(filterQuery = '') {
     searchResults.innerHTML = '';
     
     if (crateHistory.length === 0) {
-        searchResults.innerHTML = '<div class="placeholder-text">Your crate is empty. Drag and drop local files or YouTube URLs here!</div>';
+        searchResults.innerHTML = '<div class="placeholder-text">Your WAREHOUSE is empty. Scan a local folder, or drag and drop files/URLs here!</div>';
         return;
     }
 
@@ -77,7 +77,7 @@ function renderCrate(filterQuery = '') {
     });
 
     if (filtered.length === 0) {
-        searchResults.innerHTML = '<div class="placeholder-text">No matches in crate.</div>';
+        searchResults.innerHTML = '<div class="placeholder-text">No matches in WAREHOUSE.</div>';
         return;
     }
 
@@ -168,6 +168,65 @@ searchResults.addEventListener('drop', (e) => {
 
 // Render initial crate
 renderCrate();
+
+// WAREHOUSE Local Scanning
+window.scanLocalWarehouse = async function() {
+    const statusEl = document.getElementById('settings-status');
+    if (!window.showDirectoryPicker) {
+        statusEl.textContent = 'Browser does not support folder scanning.';
+        return;
+    }
+    
+    try {
+        const dirHandle = await window.showDirectoryPicker({
+            id: 'butterpass_warehouse',
+            mode: 'read'
+        });
+        
+        statusEl.textContent = 'Scanning directory...';
+        let foundCount = 0;
+        
+        // Recursive search for media files
+        async function scanDirectory(handle, currentPath) {
+            for await (const entry of handle.values()) {
+                if (entry.kind === 'file') {
+                    const name = entry.name.toLowerCase();
+                    if (name.endsWith('.mp3') || name.endsWith('.wav') || name.endsWith('.mp4') || name.endsWith('.webm') || name.endsWith('.ogg')) {
+                        const file = await entry.getFile();
+                        const url = URL.createObjectURL(file);
+                        
+                        // Tag title with the parent folder name (Crates inside Crates)
+                        let title = file.name;
+                        if (currentPath) {
+                            title = `[${currentPath}] ${title}`;
+                        }
+                        
+                        // We use file.name as videoId for local files
+                        window.addToCrate('local', title, true, url);
+                        foundCount++;
+                    }
+                } else if (entry.kind === 'directory') {
+                    // Recursive call
+                    await scanDirectory(entry, entry.name);
+                }
+            }
+        }
+        
+        await scanDirectory(dirHandle, dirHandle.name);
+        
+        statusEl.textContent = `Scan complete! Added ${foundCount} playable files to WAREHOUSE.`;
+        document.getElementById('search-input').value = '';
+        renderCrate();
+        
+    } catch (err) {
+        console.error(err);
+        if (err.name !== 'AbortError') {
+            statusEl.textContent = 'Error scanning folder.';
+        } else {
+            statusEl.textContent = 'Scan cancelled.';
+        }
+    }
+};
 
 // Local Drive Export
 window.exportCrateToLocalDrive = async function() {
