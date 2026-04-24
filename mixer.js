@@ -84,6 +84,8 @@ function setPlayerVolume(deck, vol) {
 
 // Global function to load a video into a deck
 window.loadVideoToDeck = function(deck, source, title, isLocal = false) {
+    if (window.addToCrate) window.addToCrate(isLocal ? 'local' : source, title, isLocal, isLocal ? source : null);
+    
     queues[deck].push({ source, title, isLocal });
     saveQueues();
     if (queues[deck].length === 1) {
