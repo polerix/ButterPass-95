@@ -466,6 +466,8 @@ input[type=range]::-webkit-slider-thumb {
     left: 20px;
     width: 260px;
     height: 500px;
+    resize: both;
+    overflow: auto;
 }
 
 .search-controls {

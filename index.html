@@ -25,12 +25,12 @@
                     <li class="start-menu-item" onclick="location.reload()">
                         <img src="https://win98icons.alexmeub.com/icons/png/computer_explorer-4.png" width="24"> Restart
                     </li>
-                    <li class="start-menu-item" onclick="document.getElementById('manual-window').style.display='flex'; toggleStartMenu();">
+                    <li class="start-menu-item" onclick="openWindow('manual-window'); toggleStartMenu();">
                         <img src="https://win98icons.alexmeub.com/icons/png/run-1.png" width="24" alt="Run">
                         Run Direct...
                     </li>
                     <div class="menu-divider"></div>
-                    <li class="start-menu-item" onclick="document.getElementById('settings-window').style.display='flex'; toggleStartMenu();">
+                    <li class="start-menu-item" onclick="openWindow('settings-window'); toggleStartMenu();">
                         <img src="https://win98icons.alexmeub.com/icons/png/settings_gear-0.png" width="24" alt="Settings">
                         Settings
                     </li>
@@ -55,13 +55,13 @@
 
     <main class="workspace">
         <!-- Search / WAREHOUSE Window -->
-        <div class="window search-window" id="search-window">
+        <div onmousedown="focusWindow(this)" class="window search-window" id="search-window">
             <div class="title-bar">
-                <div class="title-bar-text">WAREHOUSE</div>
+                <div class="title-bar-text">ButterPass - WAREHOUSE</div>
                 <div class="title-bar-controls">
-                    <button aria-label="Minimize"></button>
+                    <button aria-label="Minimize" onclick="toggleMinimize('search-window')"></button>
                     <button aria-label="Maximize"></button>
-                    <button aria-label="Close"></button>
+                    <button aria-label="Close" onclick="document.getElementById('search-window').style.display='none'"></button>
                 </div>
             </div>
             <div class="window-body">
@@ -76,9 +76,9 @@
         </div>
 
         <!-- Manual Load Window (Run Dialog Style) -->
-        <div class="window manual-window" id="manual-window" style="top: 150px; left: 100px; width: 350px; display: none;">
+        <div onmousedown="focusWindow(this)" class="window manual-window" id="manual-window" style="top: 150px; left: 100px; width: 350px; display: none;">
             <div class="title-bar">
-                <div class="title-bar-text">Direct Video Load</div>
+                <div class="title-bar-text">ButterPass - Load</div>
                 <div class="title-bar-controls">
                     <button aria-label="Close" onclick="document.getElementById('manual-window').style.display='none'"></button>
                 </div>
@@ -101,9 +101,9 @@
         </div>
 
         <!-- Settings Window -->
-        <div class="window manual-window" id="settings-window" style="top: 100px; left: 150px; width: 350px; display: none;">
+        <div onmousedown="focusWindow(this)" class="window manual-window" id="settings-window" style="top: 100px; left: 150px; width: 350px; display: none;">
             <div class="title-bar">
-                <div class="title-bar-text">ButterPass Settings</div>
+                <div class="title-bar-text">ButterPass - Settings</div>
                 <div class="title-bar-controls">
                     <button aria-label="Close" onclick="document.getElementById('settings-window').style.display='none'"></button>
                 </div>
@@ -124,7 +124,7 @@
         </div>
 
         <!-- Mixer Window -->
-        <div class="window mixer-window" id="mixer-window">
+        <div onmousedown="focusWindow(this)" class="window mixer-window" id="mixer-window">
             <div class="title-bar">
                 <div class="title-bar-text">ButterPass 95 - Audio Console</div>
                 <div class="title-bar-controls">

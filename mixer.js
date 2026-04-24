@@ -295,3 +295,25 @@ window.resizeMixer = function(size) {
     }
 };
 
+
+
+// Window Management
+let maxZ = 100;
+window.openWindow = function(id) {
+    const win = document.getElementById(id);
+    if (win) {
+        win.style.display = 'flex';
+        win.style.zIndex = ++maxZ;
+    }
+};
+
+window.focusWindow = function(el) {
+    el.style.zIndex = ++maxZ;
+};
+
+window.toggleMinimize = function(id) {
+    const body = document.querySelector(`#${id} .window-body`);
+    if (body) {
+        body.style.display = body.style.display === 'none' ? 'block' : 'none';
+    }
+};
