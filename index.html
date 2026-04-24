@@ -19,23 +19,27 @@
                     <div class="sidebar-text">ButterPass<span>95</span></div>
                 </div>
                 <ul class="start-menu-list">
-                    <li class="start-menu-item" onclick="alert('ButterPass 95 v1.0\nBuilt for the Aqua Hub.')">
-                        <img src="https://win98icons.alexmeub.com/icons/png/help_book_big-0.png" width="24"> About...
+                    <li class="start-menu-item" onclick="openWindow('about-window'); toggleStartMenu();">
+                        <img src="https://win98icons.alexmeub.com/icons/png/help_book_big-0.png" width="24"> ButterPass - About
                     </li>
                     <li class="start-menu-item" onclick="location.reload()">
                         <img src="https://win98icons.alexmeub.com/icons/png/computer_explorer-4.png" width="24"> Restart
                     </li>
                     <li class="start-menu-item" onclick="openWindow('manual-window'); toggleStartMenu();">
-                        <img src="https://win98icons.alexmeub.com/icons/png/run-1.png" width="24" alt="Run">
-                        Run Direct...
+                        <img src="https://win98icons.alexmeub.com/icons/png/console_prompt-0.png" width="24" alt="CMD">
+                        ButterPass - Direct Video Load
+                    </li>
+                    <li class="start-menu-item" onclick="openWindow('search-window'); toggleStartMenu();">
+                        <img src="https://win98icons.alexmeub.com/icons/png/network_drive-0.png" width="24" alt="Warehouse">
+                        ButterPass - WAREHOUSE
                     </li>
                     <div class="menu-divider"></div>
                     <li class="start-menu-item" onclick="openWindow('settings-window'); toggleStartMenu();">
                         <img src="https://win98icons.alexmeub.com/icons/png/settings_gear-0.png" width="24" alt="Settings">
-                        Settings
+                        ButterPass - Settings
                     </li>
-                    <li class="start-menu-item" onclick="document.getElementById('notepad-window').style.display='flex'">
-                        <img src="https://win98icons.alexmeub.com/icons/png/notepad-0.png" width="24"> Notepad (Stickies)...
+                    <li class="start-menu-item" onclick="openWindow('notepad-window'); toggleStartMenu();">
+                        <img src="https://win98icons.alexmeub.com/icons/png/notepad-0.png" width="24"> ButterPass - Notepad (Stickies)
                     </li>
                     <div class="menu-divider"></div>
                     <li class="start-menu-item" onclick="window.close()">
@@ -119,6 +123,28 @@
                 </fieldset>
                 <div class="manual-actions" style="display: flex; justify-content: flex-end;">
                     <button class="btn-retro" onclick="document.getElementById('settings-window').style.display='none'">OK</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- About Window -->
+        <div onmousedown="focusWindow(this)" class="window manual-window" id="about-window" style="top: 150px; left: 200px; width: 300px; display: none;">
+            <div class="title-bar">
+                <div class="title-bar-text">ButterPass - About</div>
+                <div class="title-bar-controls">
+                    <button aria-label="Close" onclick="document.getElementById('about-window').style.display='none'"></button>
+                </div>
+            </div>
+            <div class="window-body">
+                <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">
+                    <img src="https://win98icons.alexmeub.com/icons/png/help_book_big-0.png" width="32">
+                    <div>
+                        <h4 style="margin: 0;">ButterPass 95</h4>
+                        <p style="margin: 5px 0 0 0;">Version 1.0<br>Built for the Aqua Hub.</p>
+                    </div>
+                </div>
+                <div class="manual-actions" style="display: flex; justify-content: flex-end; margin-top: 15px;">
+                    <button class="btn-retro" onclick="document.getElementById('about-window').style.display='none'">OK</button>
                 </div>
             </div>
         </div>
