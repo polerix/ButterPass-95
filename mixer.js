@@ -72,14 +72,12 @@ function setPlayerVolume(deck, vol) {
     // YouTube
     const ytPlayer = deck === 'A' ? playerA : playerB;
     if (ytPlayer && typeof ytPlayer.setVolume === 'function') {
-        if (typeof ytPlayer.unMute === 'function') ytPlayer.unMute();
         ytPlayer.setVolume(vol);
     }
 
     // Local
     const localPlayer = document.getElementById(`local-player-${deck.toLowerCase()}`);
     if (localPlayer) {
-        localPlayer.muted = false;
         localPlayer.volume = vol / 100;
     }
 }
@@ -107,6 +105,7 @@ window.playFromQueue = function(deck, index, event, autoPlay = true) {
         ytEl.style.display = 'none';
         localEl.style.display = 'block';
         localEl.src = item.source;
+        localEl.muted = false;
         if (autoPlay) localEl.play();
     } else {
         localEl.style.display = 'none';
@@ -114,6 +113,7 @@ window.playFromQueue = function(deck, index, event, autoPlay = true) {
         ytEl.style.display = 'block';
         const player = deck === 'A' ? playerA : playerB;
         if (player) {
+            if (typeof player.unMute === 'function') player.unMute();
             if (autoPlay) {
                 if (player.loadVideoById) player.loadVideoById(item.source);
             } else {
